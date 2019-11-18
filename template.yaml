@@ -5,9 +5,7 @@ info:
   version: '1.0'
 paths:
   /jwk:
-    post:
-      security:
-        - bearerAuth: []
+    get:
       tags:
         - Keystore
       summary: Returns a json web keystore token for RSA signing
@@ -26,6 +24,21 @@ paths:
                     use:  sig 
                     n: {{ n }}
                     e: "AQAB"
+  /jwt:
+    get:
+      tags:
+        - Keystore
+      summary: Returns a json web token signed with the jwk
+      description: use for accessing restricted resources
+      responses:
+        '200':
+          description: OK
+          content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/Jwt'   
+                  example: 
+                    token: {{ token }}              
 
 components:
   schemas:
@@ -44,4 +57,8 @@ components:
           type: string
         e: 
           type: string
-        
+    Jwt:      
+      type: object
+      properties:
+        token:
+          type: string
