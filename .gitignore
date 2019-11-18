@@ -1,1 +1,6 @@
 node_modules
+*.key
+package-lock.json
+auth.yaml
+temp.yaml
+auth.json

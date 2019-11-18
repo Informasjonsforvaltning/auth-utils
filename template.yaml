@@ -1,0 +1,47 @@
+openapi: 3.0.2
+info:
+  title: Mock Authenticatior
+  description: API for mocking of autentication on development for felles datakatalog
+  version: '1.0'
+paths:
+  /jwk:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Keystore
+      summary: Returns a json web keystore token for RSA signing
+      description: add to jwk-key-store in application.properties
+      responses:
+        '200':
+          description: OK
+          content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/Jwk'   
+                  example: 
+                    kid: {{ kid }}
+                    kty: {{ kty }}
+                    alg: {{ alg }}
+                    use:  sig 
+                    n: {{ n }}
+                    e: "AQAB"
+
+components:
+  schemas:
+    Jwk:
+     type: object
+     properties:
+        kid:
+          type: string
+        kty:
+          type: string
+        alg: 
+          type: string
+        use:
+          type: string
+        n:
+          type: string
+        e: 
+          type: string
+        

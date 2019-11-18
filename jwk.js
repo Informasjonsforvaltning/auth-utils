@@ -4,6 +4,8 @@ var fs = require("fs");
 var jwt = require("jsonwebtoken");
 var crypto = require("crypto");
 var _ = require("lodash");
+var handlebars = require("handlebars");
+var tmpDir = './tmp';
 function generateJwk() {
     var publickkey = writeKeyPair();
     var jwkkeys = {
@@ -31,20 +33,21 @@ function writeKeyPair() {
             format: 'pem'
         }
     }), publicKey = _a.publicKey, privateKey = _a.privateKey;
+    if (!fs.existsSync(tmpDir)) {
+        fs.mkdirSync(tmpDir);
+    }
     var base64public = getBase64Key(publicKey);
-    fs.writeFileSync('public.key', base64public);
-    fs.writeFileSync('private.key', getBase64Key(privateKey));
+    fs.writeFileSync(tmpDir + '/public.key', base64public);
+    fs.writeFileSync(tmpDir + '/private.key', getBase64Key(privateKey));
     return base64public.split('-----')[2];
 }
 function getBase64Key(key) {
     var keyParts = key.split('----');
     var base64token = Buffer.from(keyParts[2]).toString('base64');
     _.replace(key, keyParts[2], base64token);
-    console.log(key);
     return key;
 }
 function generateJwt() {
-    // PAYLOAD
     var payload = {
         user_name: "1924782563",
         name: "TEST USER",
@@ -52,9 +55,8 @@ function generateJwt() {
         family_name: "USER",
         authorities: "system:root:admin"
     };
-    var privateKEY = fs.readFileSync('./private.key', 'utf8');
-    var publicKEY = fs.readFileSync('./public.key', 'utf8');
-    // SIGNING OPTIONS
+    var privateKEY = fs.readFileSync(tmpDir + '/private.key', 'utf8');
+    var publicKEY = fs.readFileSync(tmpDir + '/public.key', 'utf8');
     var signOptions = {
         issuer: 'fdkmock',
         audience: ['a-backend-service', 'concept-catalouge'],
@@ -65,18 +67,19 @@ function generateJwt() {
     var token = jwt.sign(payload, privateKEY, signOptions);
     return token;
 }
-function toBase64(key) {
-}
 function writeToYaml() {
-    fs.writeFile('auth.json', generateJwk(), function (err) {
-        if (err) {
-            console.log('error :( :( ');
-        }
-    });
-    fs.writeFile('jwt.json', generateJwt(), function (err) {
-        if (err) {
-            console.log('error :( :( ');
-        }
-    });
+    var jwkkeys = {
+        kid: "074b44f1-edec-4cee-90bc-24cf023564ba",
+        kty: "RSA",
+        alg: "RS256",
+        use: "sig",
+        n: "hjkhkjhkjhakjhasfkjahkf",
+        e: "AQAB"
+    };
+    var source = fs.readFileSync("./template.yaml").toString();
+    var template = handlebars.compile(source);
+    var content = template(jwkkeys);
+    fs.writeFileSync(tmpDir + "/auth.yaml", content);
 }
+generateJwk();
 writeToYaml();
